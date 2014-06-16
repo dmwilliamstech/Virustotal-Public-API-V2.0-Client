@@ -57,6 +57,28 @@ public class VirustotalPublicV2ImplTest {
     public void tearDown() {
     }
 
+
+    public boolean isJSONValid(String test)
+    {
+        try
+        {
+            new JSONObject(test);
+        }
+        catch(JSONException ex)
+        {
+            // edited, to include @Arthur's comment
+            // e.g. in case JSONArray is valid as well...
+            try
+            {
+                new JSONArray(test);
+            }
+            catch(JSONException ex)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      * Test of getConfigInstance method, of class VirusTotalConfig.
      */
@@ -224,6 +246,40 @@ public class VirustotalPublicV2ImplTest {
         assertNotNull(fileScanReport.getPositives());
         assertNotNull(fileScanReport.getSha256());
         assertNotNull(fileScanReport.getMd5());
+
+    }
+    @Test
+    public void testScanReportForValidResourceAsJSON() throws Exception {
+        System.out.println("Test scan report for valid resources");
+
+        String resource = "5a01e158c7f7143086187982770aff1e799d95077a380353b4b1d6dfb6efc152";
+        final Response responseWrapper = (Response) PersistanceUtil.deSeralizeObject(new File("src/main/resources/persistedObjects/responseWrapperScanReportForValidResource.dat"));
+
+        when(httpRequestObject.request(anyString(), anyList(), anyList(), any(RequestMethod.class), anyList(), any(HttpStatus.class))).then(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ((HttpStatus) invocationOnMock.getArguments()[5]).setStatusCode(VirustotalStatus.SUCCESSFUL);
+                return responseWrapper;
+            }
+        });
+
+        VirusTotalConfig instance = VirusTotalConfig.getConfigInstance();
+        instance.setVirusTotalAPIKey("3d2a1046a17bb8d325403ae512e12f9467f159869817c834dac6aa7662235fb8");
+        VirustotalPublicV2 virusTotalRef = new VirustotalPublicV2Impl(httpRequestObject);
+        FileScanReport fileScanReport = virusTotalRef.getScanReport(resource, "json");
+
+          assert isJSONValid(fileScanReport) == true;
+//        assertNotNull(fileScanReport);
+//        assertTrue(fileScanReport.getScans().size() > 0);
+//        assertNotNull(fileScanReport.getScanId());
+//        assertNotNull(fileScanReport.getSha1());
+//        assertNotNull(fileScanReport.getResource());
+//        assertNotNull(fileScanReport.getPermalink());
+//        assertNotNull(fileScanReport.getTotal());
+//        assertNotNull(fileScanReport.getPositives());
+//        assertNotNull(fileScanReport.getPositives());
+//        assertNotNull(fileScanReport.getSha256());
+//        assertNotNull(fileScanReport.getMd5());
 
     }
 

@@ -154,7 +154,7 @@ public class VirustotalPublicV2Impl implements VirustotalPublicV2 {
     }
 
     @Override
-    public FileScanReport getScanReport(String resource) throws UnsupportedEncodingException, UnauthorizedAccessException, QuotaExceededException {
+    public FileScanReport getScanReport(String resource, String format = "fileScanReport") throws UnsupportedEncodingException, UnauthorizedAccessException, QuotaExceededException {
         Response responseWrapper = new Response();
         FileScanReport fileScanReport = new FileScanReport();
 
@@ -183,7 +183,16 @@ public class VirustotalPublicV2Impl implements VirustotalPublicV2 {
         if (statusCode == VirustotalStatus.SUCCESSFUL) {
             //valid response
             String serviceResponse = responseWrapper.getResponse();
-            fileScanReport = gsonProcessor.fromJson(serviceResponse, FileScanReport.class);
+            switch (format.toLowerCase()) {
+                case "json":
+                    fileScanReport = serviceResponse;
+                    break;
+                case "fileScanReport":
+                    fileScanReport = gsonProcessor.fromJson(serviceResponse, FileScanReport.class);
+                    break;
+                default:
+                    System.out.println("Invalid format")
+            }
         }
         return fileScanReport;
     }
