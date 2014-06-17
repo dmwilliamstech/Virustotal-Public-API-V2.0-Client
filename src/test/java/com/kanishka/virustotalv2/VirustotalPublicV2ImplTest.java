@@ -30,14 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author kanishka
@@ -60,24 +54,12 @@ public class VirustotalPublicV2ImplTest {
 
     public boolean isJSONValid(String test)
     {
-        try
-        {
-            new JSONObject(test);
+        try {
+            new JsonParser().parse(test);
+            return true;
+        } catch (JsonParseException e) {
+            return false;
         }
-        catch(JSONException ex)
-        {
-            // edited, to include @Arthur's comment
-            // e.g. in case JSONArray is valid as well...
-            try
-            {
-                new JSONArray(test);
-            }
-            catch(JSONException ex)
-            {
-                return false;
-            }
-        }
-        return true;
     }
     /**
      * Test of getConfigInstance method, of class VirusTotalConfig.
@@ -258,7 +240,7 @@ public class VirustotalPublicV2ImplTest {
         when(httpRequestObject.request(anyString(), anyList(), anyList(), any(RequestMethod.class), anyList(), any(HttpStatus.class))).then(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                ((HttpStatus) invocationOnMock.getArguments()[5]).setStatusCode(VirustotalStatus.SUCCESSFUL);
+                ((HttpStatus) invocationOnMock.getArguments()[5]).setStatusCode(com.kanishka.virustotalv2.VirustotalStatus.SUCCESSFUL);
                 return responseWrapper;
             }
         });
@@ -268,19 +250,8 @@ public class VirustotalPublicV2ImplTest {
         VirustotalPublicV2 virusTotalRef = new VirustotalPublicV2Impl(httpRequestObject);
         FileScanReport fileScanReport = virusTotalRef.getScanReport(resource, "json");
 
-          assert isJSONValid(fileScanReport) == true;
-//        assertNotNull(fileScanReport);
-//        assertTrue(fileScanReport.getScans().size() > 0);
-//        assertNotNull(fileScanReport.getScanId());
-//        assertNotNull(fileScanReport.getSha1());
-//        assertNotNull(fileScanReport.getResource());
-//        assertNotNull(fileScanReport.getPermalink());
-//        assertNotNull(fileScanReport.getTotal());
-//        assertNotNull(fileScanReport.getPositives());
-//        assertNotNull(fileScanReport.getPositives());
-//        assertNotNull(fileScanReport.getSha256());
-//        assertNotNull(fileScanReport.getMd5());
-
+        assertNotNull(fileScanReport);
+        assert isJSONValid(fileScanReport) == true;
     }
 
     @Test(expected = QuotaExceededException.class)
